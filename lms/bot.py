@@ -2,7 +2,7 @@ from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, Callb
 from telegram import Update, ReplyKeyboardRemove, InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup, KeyboardButton, Video
 from .constants import messages
 from .db import Database
-users_db = Database('/home/codeacademyRobot/db.json')
+users_db = Database('db.json')
 
 def start(update: Update, context: CallbackContext):
     username = update.effective_user.username
