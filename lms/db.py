@@ -3,7 +3,7 @@ from tinydb.table import Document
 
 class Database:
     def __init__(self) -> None:
-        self.db = TinyDB('../db.json', indent=4, separators=(',', ': '))
+        self.db = TinyDB('/home/codeacademyRobot/codeacademyuz-bot/db.json', indent=4, separators=(',', ': '))
         self.users = self.db.table('users')
         self.temp_user_data = self.db.table('user_data')
     
