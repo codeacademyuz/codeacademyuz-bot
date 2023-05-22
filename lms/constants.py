@@ -11,8 +11,9 @@ messages = {
     
     "add_last_name": "Iltimos familiyangizni kiriting\!\n\(Masalan: *Rasulov*\)",
     
-    "add_phone_number": "Iltimos telefon raqamingizni kiriting\!\n\(Masalan: *\+998 95 012 77 33*\)",
+    "add_phone_number": "Iltimos telefon raqamingizni kiriting\!\n\(Masalan: *\998950127733*\)",
     
+    "add_phone_number_error": "Iltimos telefon raqamingizni to'g'ri kiriting\!\n\(Masalan: *\998950127733*\)",
     "add_region": "Iltimos hududingizni tanlang\!",
     
     "add_school": "Iltimos o'qishgan maktabingizni kiriting\!\n\(Masalan: *1\-maktab* yoki *1\-IDUM*\)",

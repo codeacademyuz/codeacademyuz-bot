@@ -2,6 +2,7 @@ from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, Callb
 from telegram import Update, ReplyKeyboardRemove, InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup, KeyboardButton, Video
 from .constants import messages
 from .db import Database
+import re
 users_db = Database()
 
 def start(update: Update, context: CallbackContext):
@@ -100,25 +101,33 @@ def add_last_name(update: Update, context: CallbackContext):
 
     update.message.reply_markdown_v2(messages['add_phone_number'])
 
+
 def add_phone_number(update: Update, context: CallbackContext):
     text = update.message.text
     chat_id = update.effective_chat.id
     data = users_db.temp_user_data_get(chat_id)
-    data['phone_number'] = text
-    users_db.temp_user_data_update(data, chat_id)
-    
-    button1 = KeyboardButton(text = "Samarqand shahar")
-    button2 = KeyboardButton(text = "Samarqand tumani")
-    button3 = KeyboardButton(text = "Bulung'ur tumani")
-    button4 = KeyboardButton(text = "Jomboy tumani")
-    button5 = KeyboardButton(text = "Ishtixon tumani")
-    button6 = KeyboardButton(text = "Kattaqo'rg'on tumani")
-    button7 = KeyboardButton(text = "Kattaqo'rg'on shahar")
-    button8 = KeyboardButton(text = "Toyloq tumani")
-    button9 = KeyboardButton(text = "Qo'shrabot tumani")
 
-    keyboard = ReplyKeyboardMarkup([[button1, button2], [button3, button4], [button5, button6], [button7, button8], [button9]], resize_keyboard=True)
-    update.message.reply_markdown_v2(messages['add_region'], reply_markup=keyboard)
+    if re.match(r"^998\d{9}$", text) == None:
+        update.message.reply_markdown_v2(messages['add_phone_number_error']) 
+        return False
+    else:
+        data['phone_number'] = text
+        users_db.temp_user_data_update(data, chat_id)
+    
+    
+        button1 = KeyboardButton(text = "Samarqand shahar")
+        button2 = KeyboardButton(text = "Samarqand tumani")
+        button3 = KeyboardButton(text = "Bulung'ur tumani")
+        button4 = KeyboardButton(text = "Jomboy tumani")
+        button5 = KeyboardButton(text = "Ishtixon tumani")
+        button6 = KeyboardButton(text = "Kattaqo'rg'on tumani")
+        button7 = KeyboardButton(text = "Kattaqo'rg'on shahar")
+        button8 = KeyboardButton(text = "Toyloq tumani")
+        button9 = KeyboardButton(text = "Qo'shrabot tumani")
+
+        keyboard = ReplyKeyboardMarkup([[button1, button2], [button3, button4], [button5, button6], [button7, button8], [button9]], resize_keyboard=True)
+        update.message.reply_markdown_v2(messages['add_region'], reply_markup=keyboard)
+        return True
 
 def add_region(update: Update, context: CallbackContext):
     text = update.message.text
@@ -159,7 +168,6 @@ def finally_registration(update: Update, context: CallbackContext):
         users_db.add_user(data, chat_id)
         users_db.temp_user_data_remove(chat_id)
         update.message.reply_markdown_v2("Siz muvaffaqiyatli ro'yxatdan o'tdingiz\!", reply_markup=ReplyKeyboardRemove())
-        return ConversationHandler.END
     else:
         return registration(update, context)
 
@@ -190,8 +198,11 @@ def registration(update: Update, context: CallbackContext):
         users_db.status = "phone_number"
 
     elif status == "phone_number":
-        add_phone_number(update, context)
-        users_db.status = "region"
+        is_valid = add_phone_number(update, context)
+        if is_valid:
+            users_db.status = "region"
+        else:
+            users_db.status = "phone_number"
 
     elif status == "region":
         add_region(update, context)
