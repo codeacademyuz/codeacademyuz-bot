@@ -181,7 +181,7 @@ def registration(update: Update, context: CallbackContext):
     #     status = "registration"
     status = users_db.status
 
-    if text == "Ro'yxatdan o'tish!" or status == "registration":
+    if text == "Ro'yxatdan o'tish!":
         data = {
             "chat_id": chat_id,
         }
@@ -218,7 +218,7 @@ def registration(update: Update, context: CallbackContext):
             users_db.status = "other"
         else:
             update.message.reply_markdown_v2(messages['add_first_name'], reply_markup=ReplyKeyboardRemove())
-            users_db.status = "registration"
+            users_db.status = "first_name"
 
     elif users_db.status_send_url == "sending_url":
         users_db.status_send_url = "other"
