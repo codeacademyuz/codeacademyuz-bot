@@ -44,7 +44,10 @@ def send_message_all_users(update: Update, context: CallbackContext):
     if chat_id == 1046157991 or chat_id == 715393503:
         for user in users:
             try:
-                context.bot.send_message(chat_id=user['chat_id'], text=text)
+                # create inline keyboard for sending url
+                button = InlineKeyboardButton("Darsga o'tish", url=text)
+                keyboard = InlineKeyboardMarkup([[button]])
+                context.bot.send_message(chat_id=user['chat_id'], text="Darsga o'tish uchun quyidagi tugmani bosing:", reply_markup=keyboard)
             except:
                 error_message = f"Xatolik yuz berdi: \n\Ismi: {user['first_name']}\nFamilyasi: {user['last_name']}\nUsername: {user['username']}\nMaktabi: {user['school']}\nViloyati: {user['region']}"
                 context.bot.send_message(chat_id=chat_id, text=error_message)
