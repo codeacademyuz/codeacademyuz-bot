@@ -10,13 +10,11 @@ from .bot import (
     add_phone_number,
     add_region,
     add_school,
-    cancel,
     finally_registration,
     info,
     all_users,
     send_url,
     send_message_all_users,
-    cancel_lesson
 )
 
 def main(dispatcher):
@@ -27,5 +25,5 @@ def main(dispatcher):
     dispatcher.add_handler(CallbackQueryHandler(noneusername, pattern='noneusername'))
     dispatcher.add_handler(MessageHandler(Filters.text("👤 Info"), info))
     dispatcher.add_handler(MessageHandler(Filters.text, registration))
-    
+
     return dispatcher
