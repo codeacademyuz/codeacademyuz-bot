@@ -5,35 +5,26 @@ from .db import Database
 import re
 users_db = Database()
 
+
 def start(update: Update, context: CallbackContext):
-    username = update.effective_user.username
     first_name = update.effective_user.first_name
-    if username == None:
-        hi = messages.get('hi').format(first_name=first_name)
-        msg = messages.get('username_none')
-        start_msg = f"{hi}\n\n{msg}"
-        # create inline keyboard
-        button_andriod = InlineKeyboardButton("Andriod uchun", callback_data="noneusername:andriod")
-        button_ios = InlineKeyboardButton("IOS uchun", callback_data="noneusername:ios")
-        keyboard = InlineKeyboardMarkup([[button_andriod, button_ios]])
+    welcome_text = messages.get('welcome_text').format(first_name=first_name)
+    button = KeyboardButton(text="Ro'yxatdan o'tish!")
+    keyboard = ReplyKeyboardMarkup([[button]], resize_keyboard=True)
+    update.message.reply_html(text=welcome_text, reply_markup=keyboard)
+
+    check_user = users_db.check_user(update.effective_chat.id)
+    if check_user:
+        start_msg = messages['registrated']
+        button = KeyboardButton(text="👤 Info")
+        keyboard = ReplyKeyboardMarkup([[button]], resize_keyboard=True)
         update.message.reply_markdown_v2(start_msg, reply_markup=keyboard)
-    
     else:
-        hi = messages.get('hi')
-        check_user = users_db.check_user(update.effective_chat.id)
+        start_msg = messages.get('username_exists')
 
-        if check_user:
-            start_msg = hi.format(first_name=first_name) + messages['registrated']
-            button = KeyboardButton(text="👤 Info")
-            keyboard = ReplyKeyboardMarkup([[button]], resize_keyboard=True)
-            update.message.reply_markdown_v2(start_msg, reply_markup=keyboard)
-        else:
-            msg = messages.get('username_exists')
-            start_msg = f"{hi}\n\n{msg}".format(first_name=update.effective_user.first_name)
-
-            button = KeyboardButton(text="Ro'yxatdan o'tish!")
-            keyboard = ReplyKeyboardMarkup([[button]], resize_keyboard=True)
-            update.message.reply_markdown_v2(start_msg, reply_markup=keyboard)
+        button = KeyboardButton(text="Ro'yxatdan o'tish!")
+        keyboard = ReplyKeyboardMarkup([[button]], resize_keyboard=True)
+        update.message.reply_markdown_v2(start_msg, reply_markup=keyboard)
 
 def all_users(update: Update, context: CallbackContext):
     users_count = users_db.get_users()
@@ -80,11 +71,11 @@ def info(update: Update, context: CallbackContext):
 def noneusername(update: Update, context: CallbackContext):
     query = update.callback_query
     # send video through file id
-
+    
     if query.data.split(':')[1] == 'andriod':
-        query.bot.send_video(chat_id=update.effective_user.id, video=messages['andriod'])
-    elif query.data.split(':') == 'ios':
-        query.bot.send_video(update.effective_user.id, video=messages['ios'])
+        query.bot.send_video(chat_id=update.effective_user.id, video=messages['andriod'], caption=messages['caption'])
+    elif query.data.split(':')[1] == 'ios':
+        query.bot.send_video(update.effective_user.id, video=messages['ios'], caption=messages['caption'])
     
 
 def add_first_name(update: Update, context: CallbackContext):
@@ -187,12 +178,22 @@ def registration(update: Update, context: CallbackContext):
     status = users_db.status
 
     if text == "Ro'yxatdan o'tish!":
-        data = {
-            "chat_id": chat_id,
-        }
-        users_db.add_temp_user_data(data, chat_id)
-        update.message.reply_markdown_v2(messages['add_first_name'], reply_markup=ReplyKeyboardRemove())
-        users_db.status = "first_name"
+        username = update.effective_user.username
+        if username == None:
+            start_msg = messages.get('username_none')
+            # create inline keyboard
+            button_andriod = InlineKeyboardButton("Andriod uchun", callback_data="noneusername:andriod")
+            button_ios = InlineKeyboardButton("IOS uchun", callback_data="noneusername:ios")
+            keyboard = InlineKeyboardMarkup([[button_andriod, button_ios]])
+            update.message.reply_markdown_v2(start_msg, reply_markup=keyboard)
+        
+        else:
+            data = {
+                "chat_id": chat_id,
+            }
+            users_db.add_temp_user_data(data, chat_id)
+            update.message.reply_markdown_v2(messages['add_first_name'], reply_markup=ReplyKeyboardRemove())
+            users_db.status = "first_name"
 
     elif status == "first_name":
         add_first_name(update, context)

@@ -1,4 +1,17 @@
 messages = {
+    "welcome_text": """
+Assalomu alaykum, {first_name}!
+
+<b>CODEACADEMY</b> dasturchilar maktabining ro'yxatga oluvchi botiga xush kelibsiz! Kelejak kasbini o'rganmoqchi bo'lsangiz bizga qo'shiling!
+
+Bizning asosiy kanalimiz
+<b>📱 Telegram:</b> @codeacademyai
+
+Biz bilan bog'lanish uchun
+<b>📱 Telegram bot:</b> @codeacademy_admin
+<b>📞 Telefon:</b> +998 95 012 77 33
+    """,
+
     "hi": "Assalomu alaykum, {first_name}\!",
     
     "username_none": "Ro'yhatdan o'tish uchun sizda telegram *username* mavjud emas\! Iltimos, username kiriting\!\n\nqo'llanma uchun video tanlang\!",
@@ -41,5 +54,6 @@ Kelejak kasbini o'rganmoqchi bo'lsangiz bizga qo'shiling\!
     # change user name video
     # android
     "andriod": "BAACAgIAAxkBAAIFcGRrlZGtKzjsKkNYOjMmGj-W3cpCAAKQMAACh9pYSxdsBX-6LI-ZLwQ",
-    "ios": "",
+    "ios": "BAACAgIAAxkBAAIF1WRrpzWgJoWuob6TOrLbZsOUQCTHAAJyLwACh9pgSzSpijTsqevSLwQ",
+    "caption": "username kiritib bo'lgach \"Ro'yxatdan o'tish!\" tugmasini qayta kriting!",
 }
