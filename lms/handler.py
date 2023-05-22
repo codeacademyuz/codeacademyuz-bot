@@ -23,27 +23,9 @@ def main(dispatcher):
 
     dispatcher.add_handler(CommandHandler('start', start))
     dispatcher.add_handler(CommandHandler('all_users', all_users))
+    dispatcher.add_handler(CommandHandler("send_url", send_url))
     dispatcher.add_handler(CallbackQueryHandler(noneusername, pattern='noneusername'))
     dispatcher.add_handler(MessageHandler(Filters.text("👤 Info"), info))
-    dispatcher.add_handler(ConversationHandler(
-        entry_points=[MessageHandler(Filters.text("Ro'yxatdan o'tish!"), registration)],
-        states={
-            0: [MessageHandler(Filters.text, add_first_name)],
-            1: [MessageHandler(Filters.text, add_last_name)],
-            2: [MessageHandler(Filters.text, add_phone_number)],
-            3: [MessageHandler(Filters.text, add_region)],
-            4: [MessageHandler(Filters.text, add_school)],
-            5: [MessageHandler(Filters.text, finally_registration)]
-            },
-
-        fallbacks=[CommandHandler("cancel", cancel)]
-    ))
-    dispatcher.add_handler(ConversationHandler(
-        entry_points=[CommandHandler("send_url", send_url)],
-        states={
-            0: [MessageHandler(Filters.text, send_message_all_users)]
-            },
-
-        fallbacks=[CommandHandler("cancel_lesson", cancel)]
-    ))
+    dispatcher.add_handler(MessageHandler(Filters.text, registration))
+    
     return dispatcher

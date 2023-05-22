@@ -6,6 +6,8 @@ class Database:
         self.db = TinyDB('db.json', indent=4)
         self.users = self.db.table('users')
         self.temp_user_data = self.db.table('user_data')
+        self.status = "other"
+        self.status_send_url = "other"
     
     def check_user(self, chat_id: int):
         if self.users.get(doc_id=chat_id):

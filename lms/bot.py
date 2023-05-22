@@ -37,16 +37,6 @@ def all_users(update: Update, context: CallbackContext):
     users_count = users_db.get_users()
     update.message.reply_html(f"Botdan ro'yxatdan o'tgan foydalanuvchilar soni: <b>{len(users_count)}</b>")
 
-def send_url(update: Update, context: CallbackContext):
-    text = "Yuborish uchun URL manzilini kiriting:"
-    update.message.reply_text(text)
-    return 0
-
-def cancel_lesson(update: Update, context: CallbackContext):
-    text = "Dars bekor qilindi!"
-    update.message.reply_text(text)
-    return ConversationHandler.END
-
 def send_message_all_users(update: Update, context: CallbackContext):
     users = users_db.get_users()
     text = update.message.text
@@ -58,6 +48,16 @@ def send_message_all_users(update: Update, context: CallbackContext):
         context.bot.send_message(chat_id=chat_id, text="Xabar yuborildi!")
     else:
         context.bot.send_message(chat_id=chat_id, text="Siz bu buyruqni bajarib bo'lmaysiz!")
+    
+def send_url(update: Update, context: CallbackContext):
+    text = "Yuborish uchun URL manzilini kiriting:"
+    update.message.reply_text(text)
+    users_db.status_send_url = "sending_url"
+
+
+def cancel_lesson(update: Update, context: CallbackContext):
+    text = "Dars bekor qilindi!"
+    update.message.reply_text(text)
     return ConversationHandler.END
 
 def info(update: Update, context: CallbackContext):
@@ -79,22 +79,13 @@ def noneusername(update: Update, context: CallbackContext):
     query.answer("Video yuklanmoqda...")
     query.edit_message_text(text="send cheat sheet video")
 
-def registration(update: Update, context: CallbackContext):
-    # remove reply keyboard
-    update.message.reply_markdown_v2(messages['add_first_name'], reply_markup=ReplyKeyboardRemove())
-
-    return 0
-
 def add_first_name(update: Update, context: CallbackContext):
     chat_id = update.effective_chat.id
     text = update.message.text
-    data = {
-        'first_name': text,
-    }
-    users_db.add_temp_user_data(data, chat_id)
+    data = users_db.temp_user_data_get(chat_id)
+    data['first_name'] = text
+    users_db.temp_user_data_update(data, chat_id)
     update.message.reply_markdown_v2(messages['add_last_name'])
-
-    return 1
 
 def add_last_name(update: Update, context: CallbackContext):
     text = update.message.text
@@ -106,8 +97,6 @@ def add_last_name(update: Update, context: CallbackContext):
     users_db.temp_user_data_update(data, chat_id)
 
     update.message.reply_markdown_v2(messages['add_phone_number'])
-
-    return 2
 
 def add_phone_number(update: Update, context: CallbackContext):
     text = update.message.text
@@ -129,8 +118,6 @@ def add_phone_number(update: Update, context: CallbackContext):
     keyboard = ReplyKeyboardMarkup([[button1, button2], [button3, button4], [button5, button6], [button7, button8], [button9]], resize_keyboard=True)
     update.message.reply_markdown_v2(messages['add_region'], reply_markup=keyboard)
 
-    return 3
-
 def add_region(update: Update, context: CallbackContext):
     text = update.message.text
     chat_id = update.effective_chat.id
@@ -140,7 +127,6 @@ def add_region(update: Update, context: CallbackContext):
 
     update.message.reply_markdown_v2(messages['add_school'], reply_markup=ReplyKeyboardRemove())
 
-    return 4
 def add_school(update: Update, context: CallbackContext):
     text = update.message.text
     chat_id = update.effective_chat.id
@@ -161,7 +147,6 @@ def add_school(update: Update, context: CallbackContext):
     msg = messages['tasdiqlash_html'].format(first_name=first_name, last_name=last_name, phone_number=phone_number, region=region, school=school)
     # reply html format
     update.message.reply_html(msg, reply_markup=keyboard)
-    return 5
 
 def finally_registration(update: Update, context: CallbackContext):
     text = update.message.text
@@ -176,8 +161,52 @@ def finally_registration(update: Update, context: CallbackContext):
     else:
         return registration(update, context)
 
-def cancel(update: Update, context: CallbackContext):
+def registration(update: Update, context: CallbackContext):
+    # remove reply keyboard
     chat_id = update.effective_chat.id
-    users_db.temp_user_data_remove(chat_id)
-    update.message.reply_markdown_v2("Siz ro'yxatdan o'tkazib bo'lmadingiz\!")
-    return ConversationHandler.END
+    temp_data = users_db.temp_user_data_get(chat_id)
+    text = update.message.text
+    # if text == "":
+    #     status = users_db.status
+    #     status = "registration"
+    status = users_db.status
+
+    if text == "Ro'yxatdan o'tish!" or status == "registration":
+        data = {
+            "chat_id": chat_id,
+        }
+        users_db.add_temp_user_data(data, chat_id)
+        update.message.reply_markdown_v2(messages['add_first_name'], reply_markup=ReplyKeyboardRemove())
+        users_db.status = "first_name"
+
+    elif status == "first_name":
+        add_first_name(update, context)
+        users_db.status = "last_name"
+
+    elif status == "last_name":
+        add_last_name(update, context)
+        users_db.status = "phone_number"
+
+    elif status == "phone_number":
+        add_phone_number(update, context)
+        users_db.status = "region"
+
+    elif status == "region":
+        add_region(update, context)
+        users_db.status = "school"
+
+    elif status == "school":   
+        add_school(update, context)
+        users_db.status = "tasdiqlash"
+
+    elif status == "tasdiqlash":  
+        if text == "✅ Tasdiqlash":
+            finally_registration(update, context)
+            users_db.status = "other"
+        else:
+            update.message.reply_markdown_v2(messages['add_first_name'], reply_markup=ReplyKeyboardRemove())
+            users_db.status = "registration"
+
+    elif users_db.status_send_url == "sending_url":
+        users_db.status_send_url = "other"
+        send_message_all_users(update, context)
