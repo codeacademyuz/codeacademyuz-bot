@@ -41,9 +41,14 @@ def send_message_all_users(update: Update, context: CallbackContext):
     users = users_db.get_users()
     text = update.message.text
     chat_id = update.effective_chat.id
-    if chat_id == 1046157991:
+    if chat_id == 1046157991 or chat_id == 715393503:
         for user in users:
-            context.bot.send_message(chat_id=user['chat_id'], text=text)
+            try:
+                context.bot.send_message(chat_id=user['chat_id'], text=text)
+            except:
+                error_message = f"Xatolik yuz berdi: \n\Ismi: {user['first_name']}\nFamilyasi: {user['last_name']}\nUsername: {user['username']}\nMaktabi: {user['school']}\nViloyati: {user['region']}"
+                context.bot.send_message(chat_id=chat_id, text=error_message)
+        
         chat_id = update.effective_chat.id
         context.bot.send_message(chat_id=chat_id, text="Xabar yuborildi!")
     else:

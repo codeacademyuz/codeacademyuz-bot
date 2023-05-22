@@ -5,16 +5,9 @@ from .bot import (
     start,
     noneusername,
     registration,
-    add_first_name,
-    add_last_name,
-    add_phone_number,
-    add_region,
-    add_school,
-    finally_registration,
     info,
     all_users,
-    send_url,
-    send_message_all_users,
+    send_url
 )
 
 def main(dispatcher):
