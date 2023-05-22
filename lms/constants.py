@@ -1,7 +1,7 @@
 messages = {
     "hi": "Assalomu alaykum, {first_name}\!",
     
-    "username_none": "Sizda telegram *username* mavjud emas\! Iltimos, quyidagi video orqali username kiriting\!",
+    "username_none": "Ro'yhatdan o'tish uchun sizda telegram *username* mavjud emas\! Iltimos, username kiriting\!\n\nqo'llanma uchun video tanlang\!",
     
     "username_exists": "Ro'yhatdan o'tish uchun pastdagi tugmani bosing👇👇",
     
@@ -36,5 +36,10 @@ Kelejak kasbini o'rganmoqchi bo'lsangiz bizga qo'shiling\!
 
 *📱 Telegram:* @codeacademyai
 *📞 Telefon:* \+998 95 012 77 33
-    """
-    }
+    """,
+
+    # change user name video
+    # android
+    "andriod": "BAACAgIAAxkBAAIFcGRrlZGtKzjsKkNYOjMmGj-W3cpCAAKQMAACh9pYSxdsBX-6LI-ZLwQ",
+    "ios": "",
+}

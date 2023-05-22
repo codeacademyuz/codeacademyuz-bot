@@ -13,8 +13,9 @@ def start(update: Update, context: CallbackContext):
         msg = messages.get('username_none')
         start_msg = f"{hi}\n\n{msg}"
         # create inline keyboard
-        button = InlineKeyboardButton("Qo'llanma orqali username o'rnatish", callback_data="noneusername")
-        keyboard = InlineKeyboardMarkup([[button]])
+        button_andriod = InlineKeyboardButton("Andriod uchun", callback_data="noneusername:andriod")
+        button_ios = InlineKeyboardButton("IOS uchun", callback_data="noneusername:ios")
+        keyboard = InlineKeyboardMarkup([[button_andriod, button_ios]])
         update.message.reply_markdown_v2(start_msg, reply_markup=keyboard)
     
     else:
@@ -79,8 +80,12 @@ def info(update: Update, context: CallbackContext):
 def noneusername(update: Update, context: CallbackContext):
     query = update.callback_query
     # send video through file id
-    query.answer("Video yuklanmoqda...")
-    query.edit_message_text(text="send cheat sheet video")
+
+    if query.data.split(':')[1] == 'andriod':
+        query.bot.send_video(chat_id=update.effective_user.id, video=messages['andriod'])
+    elif query.data.split(':') == 'ios':
+        query.bot.send_video(update.effective_user.id, video=messages['ios'])
+    
 
 def add_first_name(update: Update, context: CallbackContext):
     chat_id = update.effective_chat.id
