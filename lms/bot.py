@@ -54,12 +54,6 @@ def send_url(update: Update, context: CallbackContext):
     update.message.reply_text(text)
     users_db.status_send_url = "sending_url"
 
-
-def cancel_lesson(update: Update, context: CallbackContext):
-    text = "Dars bekor qilindi!"
-    update.message.reply_text(text)
-    return ConversationHandler.END
-
 def info(update: Update, context: CallbackContext):
     chat_id = update.effective_chat.id
     user = users_db.get_user(chat_id)
