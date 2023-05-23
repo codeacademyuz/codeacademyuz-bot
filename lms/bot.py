@@ -8,6 +8,7 @@ users_db = Database()
 
 def start(update: Update, context: CallbackContext):
     first_name = update.effective_user.first_name
+    chat_id = update.effective_chat.id
     welcome_text = messages.get('welcome_text').format(first_name=first_name)
     button = KeyboardButton(text="Ro'yxatdan o'tish!")
     keyboard = ReplyKeyboardMarkup([[button]], resize_keyboard=True)
@@ -20,6 +21,11 @@ def start(update: Update, context: CallbackContext):
         keyboard = ReplyKeyboardMarkup([[button]], resize_keyboard=True)
         update.message.reply_markdown_v2(start_msg, reply_markup=keyboard)
     else:
+        data = {
+                "chat_id": chat_id,
+                "status": "username"
+            }
+        users_db.add_temp_user_data(data, chat_id)
         start_msg = messages.get('username_exists')
 
         button = KeyboardButton(text="Ro'yxatdan o'tish!")
@@ -83,6 +89,7 @@ def add_first_name(update: Update, context: CallbackContext):
     text = update.message.text
     data = users_db.temp_user_data_get(chat_id)
     data['first_name'] = text
+    data['status'] = 'last_name'
     users_db.temp_user_data_update(data, chat_id)
     update.message.reply_markdown_v2(messages['add_last_name'])
 
@@ -93,6 +100,7 @@ def add_last_name(update: Update, context: CallbackContext):
     data['last_name'] = text
     data['username'] = update.effective_user.username
     data['chat_id'] = chat_id
+    data['status'] = 'phone_number'
     users_db.temp_user_data_update(data, chat_id)
 
     update.message.reply_markdown_v2(messages['add_phone_number'])
@@ -108,6 +116,7 @@ def add_phone_number(update: Update, context: CallbackContext):
         return False
     else:
         data['phone_number'] = text
+        data['status'] = 'region'
         users_db.temp_user_data_update(data, chat_id)
     
     
@@ -130,6 +139,7 @@ def add_region(update: Update, context: CallbackContext):
     chat_id = update.effective_chat.id
     data = users_db.temp_user_data_get(chat_id)
     data['region'] = text
+    data['status'] = 'school'
     users_db.temp_user_data_update(data, chat_id)
 
     update.message.reply_markdown_v2(messages['add_school'], reply_markup=ReplyKeyboardRemove())
@@ -139,6 +149,7 @@ def add_school(update: Update, context: CallbackContext):
     chat_id = update.effective_chat.id
     data = users_db.temp_user_data_get(chat_id)
     data['school'] = text
+    data['status'] = 'tasdiqlash'
     users_db.temp_user_data_update(data, chat_id)
 
     button = KeyboardButton(text = "✅ Tasdiqlash")
@@ -157,14 +168,17 @@ def add_school(update: Update, context: CallbackContext):
 
 def finally_registration(update: Update, context: CallbackContext):
     text = update.message.text
+    chat_id = update.effective_chat.id
     if text == "✅ Tasdiqlash":
-        chat_id = update.effective_chat.id
+        
         data = users_db.temp_user_data_get(chat_id)
 
         users_db.add_user(data, chat_id)
         users_db.temp_user_data_remove(chat_id)
         update.message.reply_markdown_v2("Siz muvaffaqiyatli ro'yxatdan o'tdingiz\!", reply_markup=ReplyKeyboardRemove())
     else:
+        data = {'status': 'first_name'}
+        users_db.temp_user_data_update(data, chat_id)
         return registration(update, context)
 
 def registration(update: Update, context: CallbackContext):
@@ -175,9 +189,9 @@ def registration(update: Update, context: CallbackContext):
     # if text == "":
     #     status = users_db.status
     #     status = "registration"
-    status = users_db.status
+    status = temp_data['status']
 
-    if text == "Ro'yxatdan o'tish!":
+    if text == "Ro'yxatdan o'tish!" and status != 'first_name':
         username = update.effective_user.username
         if username == None:
             start_msg = messages.get('username_none')
@@ -190,10 +204,11 @@ def registration(update: Update, context: CallbackContext):
         else:
             data = {
                 "chat_id": chat_id,
+                "status": "first_name"
             }
-            users_db.add_temp_user_data(data, chat_id)
+            users_db.temp_user_data_update(data, chat_id)
             update.message.reply_markdown_v2(messages['add_first_name'], reply_markup=ReplyKeyboardRemove())
-            users_db.status = "first_name"
+            # users_db.status = "first_name"
 
     elif status == "first_name":
         add_first_name(update, context)
@@ -221,10 +236,10 @@ def registration(update: Update, context: CallbackContext):
     elif status == "tasdiqlash":  
         if text == "✅ Tasdiqlash":
             finally_registration(update, context)
-            users_db.status = "other"
         else:
             update.message.reply_markdown_v2(messages['add_first_name'], reply_markup=ReplyKeyboardRemove())
-            users_db.status = "first_name"
+            data = {'status': 'first_name'}
+            users_db.temp_user_data_update(data, chat_id)
 
     elif users_db.status_send_url == "sending_url":
         users_db.status_send_url = "other"
