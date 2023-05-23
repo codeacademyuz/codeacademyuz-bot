@@ -79,11 +79,11 @@ def noneusername(update: Update, context: CallbackContext):
     # send video through file id
     
     if query.data.split(':')[1] == 'andriod':
-        with open('android_signup.mp4', 'rb') as f:
+        with open('codeacademyuz-bot/android_signup.mp4', 'rb') as f:
             andriod = f
             query.bot.send_video(chat_id=update.effective_user.id, video=andriod, caption=messages['caption'])
     elif query.data.split(':')[1] == 'ios':
-        with open('ios_signup.mp4', 'rb') as f:
+        with open('codeacademyuz-bot/ios_signup.mp4', 'rb') as f:
             ios = f
             query.bot.send_video(update.effective_user.id, video=ios, caption=messages['caption'])
     
