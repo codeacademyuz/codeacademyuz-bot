@@ -1,15 +1,8 @@
 {
-    "user_data": {},
-    "users": {
+    "user_data": {
         "1258594598": {
             "chat_id": 1258594598,
-            "status": "tasdiqlash",
-            "first_name": "fdsfasd",
-            "last_name": "fsdafsd",
-            "username": "jumanovdiyorbek",
-            "phone_number": "998950127733",
-            "region": "Kattaqo'rg'on tumani",
-            "school": "3242"
+            "status": "username"
         }
     }
 }
