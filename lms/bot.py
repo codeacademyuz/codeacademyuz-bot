@@ -4,7 +4,7 @@ from .constants import messages
 from .db import Database
 import re
 users_db = Database()
-
+import requests
 
 def start(update: Update, context: CallbackContext):
     first_name = update.effective_user.first_name
@@ -40,7 +40,7 @@ def send_message_all_users(update: Update, context: CallbackContext):
     users = users_db.get_users()
     text = update.message.text
     chat_id = update.effective_chat.id
-    if chat_id == 1046157991 or chat_id == 715393503:
+    if chat_id == 1046157991 or chat_id == 715393503 or update.message.chat.username == 'jumanovdiyorbek':
         for user in users:
             try:
                 # create inline keyboard for sending url
@@ -179,6 +179,18 @@ def finally_registration(update: Update, context: CallbackContext):
 
         users_db.add_user(data, chat_id)
         users_db.temp_user_data_remove(chat_id)
+
+        user_data = {
+            "first_name": data["first_name"],
+            "last_name": data["last_name"],
+            "tg_username": data["username"],
+            "tg_chat_id": data["chat_id"],
+            "phone": data["phone_number"],
+            "school": data["school"],
+            "region": data["region"],
+        }
+        response = requests.post("https://calms.pythonanywhere.com/students/", json=user_data)
+        
         update.message.reply_markdown_v2("Siz muvaffaqiyatli ro'yxatdan o'tdingiz\!", reply_markup=ReplyKeyboardRemove())
     else:
         data = {'status': 'first_name'}
@@ -193,57 +205,61 @@ def registration(update: Update, context: CallbackContext):
     # if text == "":
     #     status = users_db.status
     #     status = "registration"
-    status = temp_data['status']
+    if users_db.status_send_url != "sending_url":
+        if not users_db.check_user(chat_id):
+            status = temp_data['status']
 
-    if text == "Ro'yxatdan o'tish!" and status != 'first_name':
-        username = update.effective_user.username
-        if username == None:
-            start_msg = messages.get('username_none')
-            # create inline keyboard
-            button_andriod = InlineKeyboardButton("Andriod uchun", callback_data="noneusername:andriod")
-            button_ios = InlineKeyboardButton("IOS uchun", callback_data="noneusername:ios")
-            keyboard = InlineKeyboardMarkup([[button_andriod, button_ios]])
-            update.message.reply_markdown_v2(start_msg, reply_markup=keyboard)
-        
+            if text == "Ro'yxatdan o'tish!" and status != 'first_name':
+                username = update.effective_user.username
+                if username == None:
+                    start_msg = messages.get('username_none')
+                    # create inline keyboard
+                    button_andriod = InlineKeyboardButton("Andriod uchun", callback_data="noneusername:andriod")
+                    button_ios = InlineKeyboardButton("IOS uchun", callback_data="noneusername:ios")
+                    keyboard = InlineKeyboardMarkup([[button_andriod, button_ios]])
+                    update.message.reply_markdown_v2(start_msg, reply_markup=keyboard)
+                
+                else:
+                    data = {
+                        "chat_id": chat_id,
+                        "status": "first_name"
+                    }
+                    users_db.temp_user_data_update(data, chat_id)
+                    update.message.reply_markdown_v2(messages['add_first_name'], reply_markup=ReplyKeyboardRemove())
+                    # users_db.status = "first_name"
+
+            elif status == "first_name":
+                add_first_name(update, context)
+                users_db.status = "last_name"
+
+            elif status == "last_name":
+                add_last_name(update, context)
+                users_db.status = "phone_number"
+
+            elif status == "phone_number":
+                is_valid = add_phone_number(update, context)
+                if is_valid:
+                    users_db.status = "region"
+                else:
+                    users_db.status = "phone_number"
+
+            elif status == "region":
+                add_region(update, context)
+                users_db.status = "school"
+
+            elif status == "school":   
+                add_school(update, context)
+                users_db.status = "tasdiqlash"
+
+            elif status == "tasdiqlash":  
+                if text == "✅ Tasdiqlash":
+                    finally_registration(update, context)
+                else:
+                    update.message.reply_markdown_v2(messages['add_first_name'], reply_markup=ReplyKeyboardRemove())
+                    data = {'status': 'first_name'}
+                    users_db.temp_user_data_update(data, chat_id)
         else:
-            data = {
-                "chat_id": chat_id,
-                "status": "first_name"
-            }
-            users_db.temp_user_data_update(data, chat_id)
-            update.message.reply_markdown_v2(messages['add_first_name'], reply_markup=ReplyKeyboardRemove())
-            # users_db.status = "first_name"
-
-    elif status == "first_name":
-        add_first_name(update, context)
-        users_db.status = "last_name"
-
-    elif status == "last_name":
-        add_last_name(update, context)
-        users_db.status = "phone_number"
-
-    elif status == "phone_number":
-        is_valid = add_phone_number(update, context)
-        if is_valid:
-            users_db.status = "region"
-        else:
-            users_db.status = "phone_number"
-
-    elif status == "region":
-        add_region(update, context)
-        users_db.status = "school"
-
-    elif status == "school":   
-        add_school(update, context)
-        users_db.status = "tasdiqlash"
-
-    elif status == "tasdiqlash":  
-        if text == "✅ Tasdiqlash":
-            finally_registration(update, context)
-        else:
-            update.message.reply_markdown_v2(messages['add_first_name'], reply_markup=ReplyKeyboardRemove())
-            data = {'status': 'first_name'}
-            users_db.temp_user_data_update(data, chat_id)
+            start(update, context)
 
     elif users_db.status_send_url == "sending_url":
         users_db.status_send_url = "other"
