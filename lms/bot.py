@@ -117,7 +117,10 @@ def add_phone_number(update: Update, context: CallbackContext):
 
     if re.match(r"^998\d{9}$", text) == None:
         update.message.reply_markdown_v2(messages['add_phone_number_error']) 
-        return False
+        data = {
+                "status": "phone_number"
+            }
+        users_db.temp_user_data_update(data, chat_id)
     else:
         data['phone_number'] = text
         data['status'] = 'region'
@@ -198,66 +201,59 @@ def finally_registration(update: Update, context: CallbackContext):
         return registration(update, context)
 
 def registration(update: Update, context: CallbackContext):
-    # remove reply keyboard
-    chat_id = update.effective_chat.id
-    temp_data = users_db.temp_user_data_get(chat_id)
-    text = update.message.text
-    # if text == "":
-    #     status = users_db.status
-    #     status = "registration"
+
     if users_db.status_send_url != "sending_url":
+        chat_id = update.effective_chat.id
+
+        # check is user in database
         if not users_db.check_user(chat_id):
-            status = temp_data['status']
+            temp_data = users_db.temp_user_data_get(chat_id)
+            text = update.message.text
 
-            if text == "Ro'yxatdan o'tish!" and status != 'first_name':
-                username = update.effective_user.username
-                if username == None:
-                    start_msg = messages.get('username_none')
-                    # create inline keyboard
-                    button_andriod = InlineKeyboardButton("Andriod uchun", callback_data="noneusername:andriod")
-                    button_ios = InlineKeyboardButton("IOS uchun", callback_data="noneusername:ios")
-                    keyboard = InlineKeyboardMarkup([[button_andriod, button_ios]])
-                    update.message.reply_markdown_v2(start_msg, reply_markup=keyboard)
-                
-                else:
-                    data = {
-                        "chat_id": chat_id,
-                        "status": "first_name"
-                    }
-                    users_db.temp_user_data_update(data, chat_id)
-                    update.message.reply_markdown_v2(messages['add_first_name'], reply_markup=ReplyKeyboardRemove())
-                    # users_db.status = "first_name"
+            if not users_db.check_user(chat_id):
+                status = temp_data['status']
 
-            elif status == "first_name":
-                add_first_name(update, context)
-                users_db.status = "last_name"
+                if text == "Ro'yxatdan o'tish!" and status != 'first_name':
+                    username = update.effective_user.username
+                    if username == None:
+                        start_msg = messages.get('username_none')
+                        # create inline keyboard
+                        button_andriod = InlineKeyboardButton("Andriod uchun", callback_data="noneusername:andriod")
+                        button_ios = InlineKeyboardButton("IOS uchun", callback_data="noneusername:ios")
+                        keyboard = InlineKeyboardMarkup([[button_andriod, button_ios]])
+                        update.message.reply_markdown_v2(start_msg, reply_markup=keyboard)
+                    
+                    else:
+                        data = {
+                            "chat_id": chat_id,
+                            "status": "first_name"
+                        }
+                        users_db.temp_user_data_update(data, chat_id)
+                        update.message.reply_markdown_v2(messages['add_first_name'], reply_markup=ReplyKeyboardRemove())
+                        # users_db.status = "first_name"
 
-            elif status == "last_name":
-                add_last_name(update, context)
-                users_db.status = "phone_number"
+                elif status == "first_name":
+                    add_first_name(update, context)
 
-            elif status == "phone_number":
-                is_valid = add_phone_number(update, context)
-                if is_valid:
-                    users_db.status = "region"
-                else:
-                    users_db.status = "phone_number"
+                elif status == "last_name":
+                    add_last_name(update, context)
 
-            elif status == "region":
-                add_region(update, context)
-                users_db.status = "school"
+                elif status == "phone_number":
+                    add_phone_number(update, context)
 
-            elif status == "school":   
-                add_school(update, context)
-                users_db.status = "tasdiqlash"
+                elif status == "region":
+                    add_region(update, context)
 
-            elif status == "tasdiqlash":  
-                if text == "✅ Tasdiqlash":
-                    finally_registration(update, context)
-                else:
-                    update.message.reply_markdown_v2(messages['add_first_name'], reply_markup=ReplyKeyboardRemove())
-                    data = {'status': 'first_name'}
-                    users_db.temp_user_data_update(data, chat_id)
+                elif status == "school":   
+                    add_school(update, context)
+
+                elif status == "tasdiqlash":  
+                    if text == "✅ Tasdiqlash":
+                        finally_registration(update, context)
+                    else:
+                        update.message.reply_markdown_v2(messages['add_first_name'], reply_markup=ReplyKeyboardRemove())
+                        data = {'status': 'first_name'}
+                        users_db.temp_user_data_update(data, chat_id)
         else:
             start(update, context)
 
